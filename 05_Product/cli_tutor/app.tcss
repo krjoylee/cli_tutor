@@ -42,7 +42,7 @@ Screen {
 }
 
 #input-bar:focus {
-    border: tall bright_cyan;
+    border: tall cyan;
 }
 
 /* Global Widget Styles */
@@ -61,6 +61,6 @@ ScrollBar > Canvas {
 }
 
 /* Focus effects */
-:focus {
-    border: tall bright_green;
+*:focus {
+    border: tall green;
 }

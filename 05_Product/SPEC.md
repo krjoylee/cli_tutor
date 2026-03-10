@@ -308,3 +308,32 @@ class LLMClient:
 | 8 | `app.py` | 메인 TUI 앱 조립 | 🔲 |
 | 9 | `__main__.py` | 엔트리포인트 | 🔲 |
 | 10 | 통합 테스트 | 전체 플로우 검증 | 🔲 |
+
+---
+
+## 10. AI 개발 보조 기술 (MCP & Skills 활용)
+
+본 제품의 설계 및 구현 과정에서는 **Model Context Protocol (MCP)**의 지식과 **AI 전문가 가이드 (Skills)**를 결합하여 개발 속도와 품질을 동시에 확보했습니다.
+
+### 10.1 내장 전문가 시스템 가이드 (Skills)
+본 애플리케이션의 구조와 디자인은 아래의 사내 전문가 시스템 가이드라인을 엄격히 준수했습니다.
+- **[Skills: Web Application Development]**: 
+    - **핵심 원칙**: "Premium Designs & Visual Excellence" (단순 MVP를 넘어선 시각적 완성도).
+    - **적용 사례**: 4-패널 그리드 배치, 동적 테두리 색상 변화, 로딩 인디케이터 등 풍부한 에스테틱(Aesthetics) 구현.
+- **[Skills: Implementation Workflow]**:
+    - **핵심 원칙**: "Plan and Understand" → "Build Foundation" → "Polish and Optimize" 5단계 워크플로우.
+    - **적용 사례**: `SPEC.md`와 `TODO.md`를 우선 구축하고 모듈별로 점진적 구현 및 검증 진행.
+
+### 10.2 활용된 MCP 서버 및 참조 지식 (MCP Context7)
+`context7` MCP 서버를 통해 **[Textual(TUI)]** 및 **[Rich(Printing)]** 라이브러리의 최신 공식 가이드라인을 실시간 참조했습니다.
+
+| 참조 Topic (Title) | 출처 (Source URL) | 본 프로젝트 적용 내용 |
+| :--- | :--- | :--- |
+| **Anatomy of a Textual User Interface** | [textual.textualize.io/blog/...](https://textual.textualize.io/blog/2024/09/15/anatomy-of-a-textual-user-interface) | `Input.Submitted` 이벤트 핸들링 및 `@on` 데코레이터 패턴 |
+| **Widgets: Markdown Viewer** | [textual.textualize.io/widgets/...](https://textual.textualize.io/widgets/markdown_viewer) | LLM 응답을 비동기적으로 렌더링하기 위한 스트리밍 설계 기초 |
+| **Widgets: RichLog / Rich Printing** | [textual.textualize.io/widgets/...](https://textual.textualize.io/widgets/rich_log) | 터미널 패널 내 `AnsiDecoder`와 `Rich.Text`를 이용한 출력 최적화 |
+
+### 10.3 기술적 결정 사유
+- **비동기 워커 (`@work`)**: Textual 공식 가이드의 "Running long-running tasks" 설계 원칙에 따라, LLM API 호출(네트워크 I/O) 중에도 UI가 멈추지 않도록 비동기 전용 쓰레드를 할당했습니다.
+- **모듈화 구조**: 전문가 가이드인 "Workflow"의 최신 권장 사항에 맞춰, 모든 패널을 별도 클래스로 캡슐화하여 확장성을 확보했습니다.
+
