@@ -1,0 +1,66 @@
+/* CLI Tutor v1.0 Standard Stylesheet */
+
+Screen {
+    background: $surface;
+    color: $text;
+}
+
+/* 4-Panel Grid Layout Configuration */
+#main-layout {
+    layout: grid;
+    grid-size: 2 1;
+    grid-columns: 18 1fr;
+}
+
+#right-pane {
+    layout: vertical;
+    width: 60; /* Fixed width for the tutor panels to maintain readability */
+}
+
+#terminal-area {
+    width: 1fr;
+    height: 100%;
+}
+
+/* Horizontal split for the two right panels */
+#right-pane ExplanationPanel {
+    height: 1fr;
+    margin-bottom: 1;
+}
+
+#right-pane AgentPanel {
+    height: 1fr;
+}
+
+/* Bottom Input Bar Style */
+#input-bar {
+    dock: bottom;
+    height: 3;
+    border: tall cyan;
+    background: $boost;
+    padding: 0 1;
+}
+
+#input-bar:focus {
+    border: tall bright_cyan;
+}
+
+/* Global Widget Styles */
+Static {
+    color: $text;
+}
+
+/* Scrollbar styling */
+ScrollBar {
+    background: $surface;
+    color: $primary;
+}
+
+ScrollBar > Canvas {
+    color: $primary;
+}
+
+/* Focus effects */
+:focus {
+    border: tall bright_green;
+}

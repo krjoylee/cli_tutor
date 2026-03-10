@@ -1,0 +1,11 @@
+# CLI Tutor v1.0 Dependencies
+# Install: pip install -r requirements.txt
+
+# TUI Framework
+textual>=0.40.0
+rich>=13.0.0
+
+# LLM Clients
+groq>=0.4.0
+google-generativeai>=0.3.0
+httpx>=0.25.0
