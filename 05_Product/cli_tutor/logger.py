@@ -18,6 +18,11 @@ class CLILogger:
             format='%(asctime)s [%(levelname)s] %(message)s',
             encoding='utf-8'
         )
+
+        # 외부 라이브러리(특히 마크다운 파서)의 과도한 DEBUG 로그 억제
+        logging.getLogger("markdown_it").setLevel(logging.INFO)
+        logging.getLogger("httpcore").setLevel(logging.INFO)
+        logging.getLogger("httpx").setLevel(logging.INFO)
         
         # 기본 로그
         logging.info("=== CLI Tutor Logging Started ===")
