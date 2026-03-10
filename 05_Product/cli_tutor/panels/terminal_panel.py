@@ -103,9 +103,9 @@ class TerminalPanel(Static):
             full_command = f"{self.target_shell} -NoProfile -Command \"{command}\""
         
         # 대화형 셸 진입 방지 로직 (단순 진입 시도 차단)
-        interactive_cmds = ["powershell", "pwsh", "cmd", "bash", "zsh", "python", "node"]
+        interactive_cmds = ["powershell", "pwsh", "cmd", "bash", "zsh", "python", "node", "wsl"]
         if command.strip().lower() in interactive_cmds:
-            msg = f"⚠️ '{command}'와 같은 대화형 셸/입력 모드는 현재 미지원입니다.\n원하는 셸을 쓰려면 '/shell {command}'를 입력한 뒤 명령어를 쓰세요."
+            msg = f"⚠️ '{command}'와 같은 대화형 셸/입력 모드는 현재 미지원입니다.\n원하는 셸을 쓰려면 '/shell {command}'를 입력한 뒤 인자를 포함해 사용하세요 (예: wsl --list)"
             self.add_output(msg, is_error=True)
             return -1, "", msg
 
@@ -124,12 +124,23 @@ class TerminalPanel(Static):
             
             # 종료 대기 (자명한 리소스 해제)
             await process.wait()
-            print(f"[DEBUG] 서브프로세스 종료됨 (ExitCode: {process.returncode})")
+            CLILogger.debug(f"Subprocess terminated (ExitCode: {process.returncode})")
             
-            # 인코딩 처리
-            encoding = "cp949" if is_windows else "utf-8"
-            stdout_str = stdout_bytes.decode(encoding, errors='replace')
-            stderr_str = stderr_bytes.decode(encoding, errors='replace')
+            # 인코딩 처리 (Windows WSL 출력 등 UTF-16LE 대응)
+            def smart_decode(data: bytes) -> str:
+                if not data: return ""
+                for enc in ["utf-8", "cp949", "utf-16"]:
+                    try:
+                        # 널 바이트(\x00)가 섞인 경우(UTF-16을 CP949로 읽었을 때 등)를 위해 체크
+                        decoded = data.decode(enc)
+                        if "\x00" not in decoded or enc == "utf-16":
+                            return decoded
+                    except:
+                        continue
+                return data.decode("cp949", errors="replace")
+
+            stdout_str = smart_decode(stdout_bytes)
+            stderr_str = smart_decode(stderr_bytes)
 
             # 화면 출력 추가
             if stdout_str:
