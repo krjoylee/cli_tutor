@@ -9,7 +9,19 @@ Screen {
 #main-layout {
     layout: grid;
     grid-size: 3 1;
-    grid-columns: 20 1fr 60;
+    grid-columns: 15 1fr 45;
+}
+
+#sessions {
+    min-width: 10;
+}
+
+#terminal {
+    min-width: 20;
+}
+
+#right-pane {
+    min-width: 30;
 }
 
 #right-pane {

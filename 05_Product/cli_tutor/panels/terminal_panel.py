@@ -14,6 +14,7 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.ansi import AnsiDecoder
 from textual.widgets import Static
+from ..logger import CLILogger
 
 
 class TerminalPanel(Static):
@@ -32,6 +33,7 @@ class TerminalPanel(Static):
         super().__init__(*args, **kwargs)
         self.history = []
         self._decoder = AnsiDecoder()
+        self.target_shell = "cmd" if os.name == 'nt' else "sh"
 
     def render(self):
         """Rich Panel 형태로 히스토리 렌더링."""
@@ -94,18 +96,30 @@ class TerminalPanel(Static):
         # 윈도우 환경과 POSIX 환경에서의 실행 처리 분기
         is_windows = os.name == 'nt'
         
+        # 실제 실행될 명령어 구성
+        full_command = command
+        if is_windows and self.target_shell in ["powershell", "pwsh"]:
+            # 파워쉘로 실행 시 Command 인자로 전달
+            full_command = f"{self.target_shell} -NoProfile -Command \"{command}\""
+        
+        # 대화형 셸 진입 방지 로직 (단순 진입 시도 차단)
+        interactive_cmds = ["powershell", "pwsh", "cmd", "bash", "zsh", "python", "node"]
+        if command.strip().lower() in interactive_cmds:
+            msg = f"⚠️ '{command}'와 같은 대화형 셸/입력 모드는 현재 미지원입니다.\n원하는 셸을 쓰려면 '/shell {command}'를 입력한 뒤 명령어를 쓰세요."
+            self.add_output(msg, is_error=True)
+            return -1, "", msg
+
+        process = None
         try:
-            # PTY 연결이 아닌 단순 서브프로세스 캡처 방식 (v1.0 스펙)
+            CLILogger.debug(f"Subprocess start: {full_command} (via {self.target_shell})")
             process = await asyncio.create_subprocess_shell(
-                command,
+                full_command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 cwd=cwd
             )
             
-            print(f"[DEBUG] 서브프로세스 기동 완료 (PID: {process.pid})")
-            
-            # communicate()로 입출력을 한 번에 캡처
+            CLILogger.debug(f"Process PID: {process.pid}")
             stdout_bytes, stderr_bytes = await process.communicate()
             
             # 종료 대기 (자명한 리소스 해제)

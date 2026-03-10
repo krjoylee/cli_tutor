@@ -12,6 +12,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Header, Footer, Input, Static
 from textual import on, work
+from .logger import CLILogger
 
 from .env_info import EnvInfo
 from .config_manager import ConfigManager
@@ -40,8 +41,10 @@ class CLITutorApp(App):
 
     def __init__(self, config: ConfigManager, env_info: EnvInfo):
         super().__init__()
+        CLILogger.setup()
         self.config = config
         self.env_info = env_info
+        CLILogger.info(f"App initialized in {os.getcwd()}")
         
         # LLM 클라이언트 초기화 (설정값이 있는 경우)
         self.llm: Optional[LLMClient] = None
@@ -85,16 +88,24 @@ class CLITutorApp(App):
         
         yield Footer()
 
+    async def on_unmount(self) -> None:
+        """앱 종료 시 자원 정리."""
+        CLILogger.info("App is unmounting...")
+        # 필요한 경우 비동기 작업 취소 등 수행
+        CLILogger.info("=== CLI Tutor Session Ended ===")
+
     # ------------------------------------------------------------------
     # 액션 핸들러
     # ------------------------------------------------------------------
     
     def action_quit(self) -> None:
         """프로그램 종료."""
+        CLILogger.info("Quit action triggered.")
         self.exit()
 
     def action_clear_terminal(self) -> None:
         """터미널 화면 지우기."""
+        CLILogger.info("Terminal clear triggered.")
         self.query_one("#terminal", TerminalPanel).clear_history()
 
     def action_focus_input(self) -> None:
@@ -129,13 +140,18 @@ class CLITutorApp(App):
             self.notify(f"🎯 목표 분석 중: {goal[:20]}...", title="Agent")
             self._handle_goal_mode(goal)
         
-        # 2. 설명 모드 (/explain 또는 /e 로 시작)
-        elif value.lower().startswith(("/explain ", "/e ")):
-            query = value.split(" ", 1)[1].strip()
-            self.notify(f"❓ 설명 요청 중: {query[:20]}...", title="Explain")
-            self._handle_explain_mode(query)
+        # 3. 셸 변경 모드 (/shell)
+        elif value.lower().startswith("/shell "):
+            shell_name = value.split(" ", 1)[1].strip().lower()
+            if shell_name in ["powershell", "pwsh", "cmd"]:
+                CLILogger.info(f"Shell change requested: {shell_name}")
+                self.notify(f"🐚 셸 변경: {shell_name}", title="System")
+                # terminal_panel에 셸 상태 저장 필드 추가 필요 (v1.2)
+                self.query_one("#terminal", TerminalPanel).target_shell = shell_name
+            else:
+                self.notify(f"❌ 지원하지 않는 셸: {shell_name}", severity="error")
 
-        # 3. 일반 명령어 모드
+        # 4. 일반 명령어 모드
         else:
             self.notify(f"🚀 명령어 실행: {value[:20]}...", title="Terminal")
             # 새로운 명령어가 시작되면 기존 해설 패널을 즉시 로딩 상태로 변경 (안바뀌는 느낌 방지)
@@ -154,14 +170,14 @@ class CLITutorApp(App):
         
         try:
             # 터미널에서 명령어 실행
-            print(f"[DEBUG] [STEP 1] 명령어 실행 시도: {command}")
+            CLILogger.info(f"[STEP 1] Executing: {command}")
             exit_code, stdout, stderr = await terminal.execute_command(command)
-            print(f"[DEBUG] [STEP 2] 실행 완료 (ExitCode: {exit_code})")
+            CLILogger.info(f"[STEP 2] Finished (ExitCode: {exit_code})")
             
-            # LLM 해설 요청 (로그 수집)
+            # LLM 해설 요청
             if self.llm:
                 explanation.set_loading()
-                print("[DEBUG] [STEP 3] LLM 해설 생성 시작...")
+                CLILogger.info("[STEP 3] Requesting LLM explanation...")
                 
                 result = await asyncio.to_thread(
                     self.llm.explain_command, 
@@ -172,11 +188,11 @@ class CLITutorApp(App):
                 
                 is_error = exit_code != 0
                 if result:
-                    print(f"[DEBUG] [STEP 4] 해설 생성 성공 (길이: {len(result)})")
+                    CLILogger.info(f"[STEP 4] Explanation success (Length: {len(result)})")
                     explanation.set_explanation(result, is_error=is_error)
                     self.notify(f"✅ 해설 완료: {command[:15]}", severity="information")
                 else:
-                    print("[DEBUG] [STEP 4] 해설 생성 결과 없음")
+                    CLILogger.warning("[STEP 4] Explanation result empty")
                     explanation.set_explanation("분석 결과가 없습니다.", is_error=is_error)
                     self.notify("⚠️ 해설 결과가 없습니다.", severity="warning")
             else:
@@ -200,7 +216,7 @@ class CLITutorApp(App):
             return
 
         agent.set_loading()
-        print(f"[DEBUG] 시나리오 생성 요청: {goal}")
+        CLILogger.info(f"Scenario generation requested: {goal}")
         
         # LLM에게 시나리오 요청
         try:
@@ -210,26 +226,26 @@ class CLITutorApp(App):
                 self.env_info
             )
         except Exception as e:
-            print(f"[DEBUG] LLM 호출 중 원인 모를 예외: {e}")
+            CLILogger.error(f"LLM Exception: {e}")
             agent.set_scenario(f"❌ LLM 호출 중 예외: {e}")
             return
         
         if not raw_response:
-            print("[DEBUG] 시나리오 응답 데이터 비었음")
+            CLILogger.warning("Scenario response empty")
             agent.set_scenario("❌ 시나리오 생성에 실패했습니다 (응답 없음).")
             return
 
-        print(f"[DEBUG] 시나리오 원본 수신 (길이: {len(raw_response)})")
+        CLILogger.debug(f"Raw scenario received (Len: {len(raw_response)})")
         # JSON 파싱 및 포매팅
         scenario = self.parser.parse(raw_response)
         if scenario:
-            print(f"[DEBUG] [SUCCESS] 시나리오 가이드 분석/로드 완료 (단계수: {len(scenario.get('steps', []))})")
+            CLILogger.info(f"Scenario parse success (Steps: {len(scenario.get('steps', []))})")
             formatted = self.parser.format_steps(scenario)
             agent.set_scenario(formatted)
             self.notify(f"✅ 가이드 생성 완료 (목표: {goal[:10]}...)", title="Agent")
         else:
             # 파싱 실패 시 폴백
-            print("[DEBUG] [WARNING] JSON 파싱 실패, 텍스트 폴백 모드로 렌더링")
+            CLILogger.warning("Scenario parse failed, showing raw fallback")
             fallback = self.parser.format_raw_fallback(raw_response)
             agent.set_scenario(fallback)
             self.notify("⚠️ 시나리오 일부 파싱 실패 (텍스트로 표시)", severity="warning")
