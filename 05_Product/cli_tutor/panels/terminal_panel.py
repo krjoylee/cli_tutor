@@ -96,7 +96,6 @@ class TerminalPanel(Static):
         
         try:
             # PTY 연결이 아닌 단순 서브프로세스 캡처 방식 (v1.0 스펙)
-            # 향후 대화형 명령어(vim, ssh, npm init 등) 지원을 위해 pty/winpty 업그레이드 여지 존재
             process = await asyncio.create_subprocess_shell(
                 command,
                 stdout=asyncio.subprocess.PIPE,
@@ -104,21 +103,19 @@ class TerminalPanel(Static):
                 cwd=cwd
             )
             
+            print(f"[DEBUG] 서브프로세스 기동 완료 (PID: {process.pid})")
+            
+            # communicate()로 입출력을 한 번에 캡처
             stdout_bytes, stderr_bytes = await process.communicate()
             
-            # 종료 대기 추가 (자원 해제 확실히)
+            # 종료 대기 (자명한 리소스 해제)
             await process.wait()
+            print(f"[DEBUG] 서브프로세스 종료됨 (ExitCode: {process.returncode})")
             
-            # 인코딩 처리 (Windows는 cp949/euc-kr, Linux/Mac은 utf-8)
+            # 인코딩 처리
             encoding = "cp949" if is_windows else "utf-8"
-            
-            try:
-                stdout_str = stdout_bytes.decode(encoding, errors='replace')
-                stderr_str = stderr_bytes.decode(encoding, errors='replace')
-            except Exception:
-                # 폴백: utf-8 시도
-                stdout_str = stdout_bytes.decode('utf-8', errors='replace')
-                stderr_str = stderr_bytes.decode('utf-8', errors='replace')
+            stdout_str = stdout_bytes.decode(encoding, errors='replace')
+            stderr_str = stderr_bytes.decode(encoding, errors='replace')
 
             # 화면 출력 추가
             if stdout_str:
@@ -128,35 +125,43 @@ class TerminalPanel(Static):
                 
             exit_code = process.returncode
             
-            # CD 명령(디렉토리 이동)에 대한 특수 처리
+            # CD 명령 처리
             if command.strip().startswith("cd ") and exit_code == 0:
-                target_dir = command.strip()[3:].strip()
-                # 셸 따옴표 제거
-                try:
-                    target_dir = shlex.split(target_dir)[0]
-                except ValueError:
-                    pass
-                
-                try:
-                    os.chdir(target_dir)
-                    self.add_output(f"현재 디렉토리: {os.getcwd()}", is_error=False)
-                except Exception as e:
-                    self.add_output(f"cd 내부 처리 에러: {e}", is_error=True)
+                self._handle_cd(command)
 
             return exit_code, stdout_str, stderr_str
 
         except asyncio.CancelledError:
-            # 워커 취소 시 대응
-            return -1, "", "작업이 취소되었습니다."
-        except ValueError as ve:
-            if "closed pipe" in str(ve):
-                self.add_output("⚠️ 파이프가 이미 닫혀 있습니다 (OS 버그 우회)", is_error=True)
-                return -1, "", str(ve)
-            raise
+            print(f"[DEBUG] 명령어 실행 워커가 취소되었습니다.")
+            if process and process.returncode is None:
+                try:
+                    process.kill()
+                    print("[DEBUG] 하위 프로세스 강제 종료(kill) 수행")
+                except Exception as ex:
+                    print(f"[DEBUG] 프로세스 종료 중 오류: {ex}")
+            raise  # @work 핸들러를 위해 상위로 전파
         except Exception as e:
-            error_msg = f"실행 중 파이썬 내부 예외 발생: {str(e)}"
+            error_msg = f"실행 중 예외 발생: {str(e)}"
+            print(f"[DEBUG] {error_msg}")
             self.add_output(error_msg, is_error=True)
             return -1, "", error_msg
+        finally:
+            # 안전한 자원 해제 확인
+            if process and process.returncode is None:
+                try:
+                    process.terminate()
+                except:
+                    pass
+
+    def _handle_cd(self, command: str):
+        """디렉토리 이동 처리 내부 로직."""
+        target_dir = command.strip()[3:].strip()
+        try:
+            target_dir = shlex.split(target_dir)[0]
+            os.chdir(target_dir)
+            self.add_output(f"현재 디렉토리: {os.getcwd()}", is_error=False)
+        except Exception as e:
+            self.add_output(f"cd 처리 에러: {e}", is_error=True)
 
     def clear_history(self):
         """화면 지우기."""

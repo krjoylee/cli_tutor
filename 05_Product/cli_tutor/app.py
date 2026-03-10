@@ -100,6 +100,12 @@ class CLITutorApp(App):
     def action_focus_input(self) -> None:
         """입력창에 포커스 주기."""
         self.query_one("#input-bar", Input).focus()
+        self.notify("⌨️ 입력창으로 포커스 이동", timeout=2)
+
+    def action_focus_next(self) -> None:
+        """Tab 대신 포커스 순환."""
+        self.screen.focus_next()
+        self.notify("🔄 위젯 전환", timeout=1)
 
     # ------------------------------------------------------------------
     # 이벤트 핸들러
@@ -120,15 +126,20 @@ class CLITutorApp(App):
         # 1. 목표 모드 (/goal 또는 /g 로 시작)
         if value.lower().startswith(("/goal ", "/g ")):
             goal = value.split(" ", 1)[1].strip()
+            self.notify(f"🎯 목표 분석 중: {goal[:20]}...", title="Agent")
             self._handle_goal_mode(goal)
         
         # 2. 설명 모드 (/explain 또는 /e 로 시작)
         elif value.lower().startswith(("/explain ", "/e ")):
             query = value.split(" ", 1)[1].strip()
+            self.notify(f"❓ 설명 요청 중: {query[:20]}...", title="Explain")
             self._handle_explain_mode(query)
 
         # 3. 일반 명령어 모드
         else:
+            self.notify(f"🚀 명령어 실행: {value[:20]}...", title="Terminal")
+            # 새로운 명령어가 시작되면 기존 해설 패널을 즉시 로딩 상태로 변경 (안바뀌는 느낌 방지)
+            self.query_one("#explanation", ExplanationPanel).set_loading()
             self._handle_command_mode(value)
 
     # ------------------------------------------------------------------
@@ -141,32 +152,43 @@ class CLITutorApp(App):
         terminal = self.query_one("#terminal", TerminalPanel)
         explanation = self.query_one("#explanation", ExplanationPanel)
         
-        # 터미널에서 명령어 실행
-        print(f"[DEBUG] 명령어 실행 시도: {command}")
-        exit_code, stdout, stderr = await terminal.execute_command(command)
-        print(f"[DEBUG] 실행 완료 (Code: {exit_code})")
-        
-        # LLM 해설 요청 (로그 수집)
-        if self.llm:
-            explanation.set_loading()
-            print("[DEBUG] LLM 해설 생성 시작...")
+        try:
+            # 터미널에서 명령어 실행
+            print(f"[DEBUG] [STEP 1] 명령어 실행 시도: {command}")
+            exit_code, stdout, stderr = await terminal.execute_command(command)
+            print(f"[DEBUG] [STEP 2] 실행 완료 (ExitCode: {exit_code})")
             
-            # 해설 결과 대기 (스트리밍은 v2.0 개선 과제)
-            # 여기서는 블로킹 없이 별도 워커로 실행됨
-            result = await asyncio.to_thread(
-                self.llm.explain_command, 
-                command, 
-                stdout + stderr, 
-                exit_code
-            )
-            
-            is_error = exit_code != 0
-            if result:
-                print(f"[DEBUG] 해설 생성 성공 (길이: {len(result)})")
-                explanation.set_explanation(result, is_error=is_error)
+            # LLM 해설 요청 (로그 수집)
+            if self.llm:
+                explanation.set_loading()
+                print("[DEBUG] [STEP 3] LLM 해설 생성 시작...")
+                
+                result = await asyncio.to_thread(
+                    self.llm.explain_command, 
+                    command, 
+                    stdout + stderr, 
+                    exit_code
+                )
+                
+                is_error = exit_code != 0
+                if result:
+                    print(f"[DEBUG] [STEP 4] 해설 생성 성공 (길이: {len(result)})")
+                    explanation.set_explanation(result, is_error=is_error)
+                    self.notify(f"✅ 해설 완료: {command[:15]}", severity="information")
+                else:
+                    print("[DEBUG] [STEP 4] 해설 생성 결과 없음")
+                    explanation.set_explanation("분석 결과가 없습니다.", is_error=is_error)
+                    self.notify("⚠️ 해설 결과가 없습니다.", severity="warning")
             else:
-                print("[DEBUG] 해설 생성 결과 없음")
-                explanation.set_explanation("분석 결과가 없습니다.", is_error=is_error)
+                self.notify("ℹ️ LLM 미설정: 실행만 수행됨", severity="information")
+                
+        except asyncio.CancelledError:
+            print(f"[DEBUG] [CANCEL] 이전 명령어 '{command}' 작업이 새 작업에 의해 취소되었습니다.")
+            # 취소 시에는 별도 처리를 하지 않고 종료 (Textual이 새 워커를 시작함)
+            raise
+        except Exception as e:
+            print(f"[DEBUG] [ERROR] 명령어 처리 중 예외: {e}")
+            self.notify(f"❌ 에러 발생: {str(e)}", severity="error")
 
     @work(exclusive=True)
     async def _handle_goal_mode(self, goal: str) -> None:
@@ -201,14 +223,16 @@ class CLITutorApp(App):
         # JSON 파싱 및 포매팅
         scenario = self.parser.parse(raw_response)
         if scenario:
-            print("[DEBUG] JSON 파싱 성공")
+            print(f"[DEBUG] [SUCCESS] 시나리오 가이드 분석/로드 완료 (단계수: {len(scenario.get('steps', []))})")
             formatted = self.parser.format_steps(scenario)
             agent.set_scenario(formatted)
+            self.notify(f"✅ 가이드 생성 완료 (목표: {goal[:10]}...)", title="Agent")
         else:
             # 파싱 실패 시 폴백
-            print("[DEBUG] JSON 파싱 실패, 폴백 표시")
+            print("[DEBUG] [WARNING] JSON 파싱 실패, 텍스트 폴백 모드로 렌더링")
             fallback = self.parser.format_raw_fallback(raw_response)
             agent.set_scenario(fallback)
+            self.notify("⚠️ 시나리오 일부 파싱 실패 (텍스트로 표시)", severity="warning")
 
     @work(exclusive=True)
     async def _handle_explain_mode(self, query: str) -> None:
