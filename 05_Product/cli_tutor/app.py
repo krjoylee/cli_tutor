@@ -32,8 +32,10 @@ class CLITutorApp(App):
     # 키 바인딩
     BINDINGS = [
         ("q", "quit", "종료"),
+        ("ctrl+q", "quit", "강제 종료"),
         ("ctrl+l", "clear_terminal", "터미널 지우기"),
         ("ctrl+g", "focus_input", "입력창 포커스"),
+        ("ctrl+t", "focus_next", "다음 위젯 (Tab 대용)"),
     ]
 
     def __init__(self, config: ConfigManager, env_info: EnvInfo):
@@ -106,8 +108,10 @@ class CLITutorApp(App):
     @on(Input.Submitted, "#input-bar")
     async def handle_input(self, event: Input.Submitted) -> None:
         """사용자 입력 제출 시 모드 분석 후 적절한 모듈로 전달."""
-        value = event.value.strip()
+        # \n 문자가 수동으로 삽입된 경우 제거 (일부 터미널 버그 대응)
+        value = event.value.replace("\\n", "").replace("\n", "").strip()
         if not value:
+            event.input.value = ""
             return
 
         # 입력창 비우기
@@ -138,11 +142,14 @@ class CLITutorApp(App):
         explanation = self.query_one("#explanation", ExplanationPanel)
         
         # 터미널에서 명령어 실행
+        print(f"[DEBUG] 명령어 실행 시도: {command}")
         exit_code, stdout, stderr = await terminal.execute_command(command)
+        print(f"[DEBUG] 실행 완료 (Code: {exit_code})")
         
         # LLM 해설 요청 (로그 수집)
         if self.llm:
             explanation.set_loading()
+            print("[DEBUG] LLM 해설 생성 시작...")
             
             # 해설 결과 대기 (스트리밍은 v2.0 개선 과제)
             # 여기서는 블로킹 없이 별도 워커로 실행됨
@@ -154,7 +161,12 @@ class CLITutorApp(App):
             )
             
             is_error = exit_code != 0
-            explanation.set_explanation(result or "분석 결과가 없습니다.", is_error=is_error)
+            if result:
+                print(f"[DEBUG] 해설 생성 성공 (길이: {len(result)})")
+                explanation.set_explanation(result, is_error=is_error)
+            else:
+                print("[DEBUG] 해설 생성 결과 없음")
+                explanation.set_explanation("분석 결과가 없습니다.", is_error=is_error)
 
     @work(exclusive=True)
     async def _handle_goal_mode(self, goal: str) -> None:
@@ -166,25 +178,35 @@ class CLITutorApp(App):
             return
 
         agent.set_loading()
+        print(f"[DEBUG] 시나리오 생성 요청: {goal}")
         
         # LLM에게 시나리오 요청
-        raw_response = await asyncio.to_thread(
-            self.llm.generate_scenario,
-            goal,
-            self.env_info
-        )
+        try:
+            raw_response = await asyncio.to_thread(
+                self.llm.generate_scenario,
+                goal,
+                self.env_info
+            )
+        except Exception as e:
+            print(f"[DEBUG] LLM 호출 중 원인 모를 예외: {e}")
+            agent.set_scenario(f"❌ LLM 호출 중 예외: {e}")
+            return
         
         if not raw_response:
-            agent.set_scenario("❌ 시나리오 생성에 실패했습니다.")
+            print("[DEBUG] 시나리오 응답 데이터 비었음")
+            agent.set_scenario("❌ 시나리오 생성에 실패했습니다 (응답 없음).")
             return
 
+        print(f"[DEBUG] 시나리오 원본 수신 (길이: {len(raw_response)})")
         # JSON 파싱 및 포매팅
         scenario = self.parser.parse(raw_response)
         if scenario:
+            print("[DEBUG] JSON 파싱 성공")
             formatted = self.parser.format_steps(scenario)
             agent.set_scenario(formatted)
         else:
             # 파싱 실패 시 폴백
+            print("[DEBUG] JSON 파싱 실패, 폴백 표시")
             fallback = self.parser.format_raw_fallback(raw_response)
             agent.set_scenario(fallback)
 

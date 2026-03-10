@@ -8,18 +8,19 @@ Screen {
 /* 4-Panel Grid Layout Configuration */
 #main-layout {
     layout: grid;
-    grid-size: 2 1;
-    grid-columns: 18 1fr;
+    grid-size: 3 1;
+    grid-columns: 20 1fr 60;
 }
 
 #right-pane {
     layout: vertical;
-    width: 60; /* Fixed width for the tutor panels to maintain readability */
+    border-left: double gray;
 }
 
-#terminal-area {
+#terminal {
     width: 1fr;
     height: 100%;
+    border-right: double gray;
 }
 
 /* Horizontal split for the two right panels */

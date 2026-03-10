@@ -106,6 +106,9 @@ class TerminalPanel(Static):
             
             stdout_bytes, stderr_bytes = await process.communicate()
             
+            # 종료 대기 추가 (자원 해제 확실히)
+            await process.wait()
+            
             # 인코딩 처리 (Windows는 cp949/euc-kr, Linux/Mac은 utf-8)
             encoding = "cp949" if is_windows else "utf-8"
             
@@ -142,6 +145,14 @@ class TerminalPanel(Static):
 
             return exit_code, stdout_str, stderr_str
 
+        except asyncio.CancelledError:
+            # 워커 취소 시 대응
+            return -1, "", "작업이 취소되었습니다."
+        except ValueError as ve:
+            if "closed pipe" in str(ve):
+                self.add_output("⚠️ 파이프가 이미 닫혀 있습니다 (OS 버그 우회)", is_error=True)
+                return -1, "", str(ve)
+            raise
         except Exception as e:
             error_msg = f"실행 중 파이썬 내부 예외 발생: {str(e)}"
             self.add_output(error_msg, is_error=True)
