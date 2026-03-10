@@ -1,0 +1,304 @@
+MANIFEST - Gemini Tutor CLI v2.1
+================================
+
+프로그램 버전: 2.1
+업데이트 날짜: 2026년 3월 10일
+상태: 프로덕션 준비 (안정화)
+이전 버전: v2.0 -> v2.1 (Textual Layout 호환성 수정)
+
+------------------------------------------------------------
+
+[파일 구조]
+------------------------------------------------------------
+
+gemini-tutor-v2.1/
+  python 파일 (메인 프로그램)
+    - gemini_tutor_app_v2.1.py    [메인 TUI 애플리케이션]
+      - EnvInfo: 환경 정보 감지
+      - ConfigManager: 설정 파일 관리
+      - SetupWizard: 초기 설정 마법사
+      - LLMClient: 다중 LLM 클라이언트 (Groq / Perplexity / Gemini)
+      - SessionPanel: 좌측 세션 패널
+      - TerminalPanel: 가운데 터미널 패널
+      - ExplanationPanel: 우측 상부 설명 패널
+      - AgentPanel: 우측 하부 에이전트 패널
+      - GeminiTutorApp: Textual 메인 앱 (FIXED)
+
+    - test_setup_v2.1.py          [Setup & 테스트 도구]
+      - 시스템 정보 수집
+      - 의존성 확인
+      - 저장된 설정 확인
+      - API 테스트 (Groq / Gemini / Perplexity)
+      - 시나리오 생성 테스트
+
+  설명서 (한글)
+    - README_v2.1_KR.md           [완전 설명서]
+      - 개요 및 주요 기능
+      - 설치 가이드
+      - 상세 가이드
+      - LLM 설정 방법
+      - 문제 해결
+      - 버전 변경사항
+
+    - QUICKSTART_v2.1.md          [5분 빠른 시작]
+      - 5단계 빠른 시작
+      - API 키 획득 방법
+      - 자주 묻는 질문 (FAQ)
+      - 문제 해결
+      - 학습 예제
+      - LLM 선택 가이드
+
+    - MANIFEST_v2.1.txt           [이 파일 - 파일 목록]
+      - 파일 구조
+      - 각 파일 설명
+      - 설정 정보
+      - 버전 변경사항
+      - 라이센스
+
+------------------------------------------------------------
+
+[각 파일 상세 설명]
+------------------------------------------------------------
+
+1) gemini_tutor_app_v2.1.py (메인 애플리케이션)
+------------------------------------------------
+역할: Gemini Tutor CLI의 핵심 프로그램
+
+주요 기능:
+  - Textual 기반 대화형 TUI 제공
+  - 다중 LLM 통합 (Groq / Perplexity / Gemini)
+  - 환경 정보 자동 감지
+  - 설정 관리 및 LLM 클라이언트 초기화
+  - 명령어 시나리오 생성
+  - 명령어 실행 결과 설명
+
+클래스 구조:
+  - EnvInfo: OS / CPU 정보 감지
+      * _detect_os(): OS 타입 판별
+      * _detect_arch(): CPU 아키텍처 감지
+      * _check_wsl(): WSL 환경 확인
+
+  - ConfigManager: 설정 파일 관리
+      * config_dir: ~/.g-tutor
+      * config_file: ~/.g-tutor/config.json
+      * save_config(): 설정 저장
+      * get() / set(): 설정값 조회/저장
+
+  - SetupWizard: 초기 설정
+      * run(): 대화형 설정 진행
+      * _setup_groq(): Groq 설정
+      * _setup_perplexity(): Perplexity 설정
+      * _setup_gemini(): Gemini 설정
+
+  - LLMClient: 다중 LLM 지원
+      * generate_scenario(): 명령어 시나리오 생성
+      * explain_command(): 명령어 결과 설명
+      * _generate_groq(): Groq API 호출
+      * _generate_perplexity(): Perplexity API 호출
+      * _generate_gemini(): Gemini API 호출
+
+  - UI 패널 (Textual widgets)
+      * SessionPanel: 세션 목록 (좌측)
+      * TerminalPanel: 터미널 입력/출력 (가운데)
+      * ExplanationPanel: 명령어 설명 (우측 상부)
+      * AgentPanel: 에이전트 가이드 (우측 하부)
+
+  - GeminiTutorApp: 메인 애플리케이션
+      * compose(): UI 레이아웃 구성 (FIXED)
+      * action_quit(): 프로그램 종료
+      * action_clear(): 화면 지우기
+
+사용 방법:
+  python gemini_tutor_app_v2.1.py
+    -> 첫 실행 시 Setup 마법사 자동 시작
+    -> 이후 TUI 앱 실행
+
+의존성:
+  - groq
+  - google-generativeai
+  - rich
+  - textual (권장: 0.40.0 이상)
+  - httpx (Perplexity 지원용)
+
+수정 사항 (v2.1):
+  - Textual Layout 에서 direction 파라미터 제거
+  - Horizontal / Vertical 컨테이너 사용
+  - TUI 레이아웃 구조 최적화
+
+
+2) test_setup_v2.1.py (Setup & 테스트 도구)
+------------------------------------------------
+역할: 설치 및 환경 검증 도구
+
+주요 기능:
+  - 시스템 정보 수집
+  - 의존성 확인
+  - 저장된 설정 확인
+  - API 테스트
+  - 시나리오 생성 테스트
+
+클래스/함수:
+  - get_processor_info(): CPU 정보
+  - get_python_path(): Python 경로
+  - load_config(): 설정 파일 로드
+  - save_config(): 설정 파일 저장
+
+  - GeminiTutorSetupTool: 메인 클래스
+      * run(): 전체 Setup 도구 실행
+      * _show_system_info(): 시스템 정보 출력
+      * _check_dependencies(): 의존성 확인
+      * _check_saved_config(): 설정 확인
+      * _test_apis(): API 테스트 메뉴
+      * _test_groq(): Groq API 테스트
+      * _test_gemini(): Gemini API 테스트
+      * _test_perplexity(): Perplexity API 테스트
+      * _test_scenario(): 시나리오 생성 테스트
+
+사용 방법:
+  python test_setup_v2.1.py
+    -> 시스템 정보 표시
+    -> 의존성 확인
+    -> API 테스트 옵션 제공
+    -> 시나리오 생성 테스트
+
+의존성:
+  - rich (콘솔 출력)
+  - groq (API 테스트)
+
+
+3) README_v2.1_KR.md (완전 설명서)
+------------------------------------------------
+용도: 전체 프로젝트 상세 설명서
+
+내용:
+  1. 개요: 프로그램 소개 및 주요 기능
+  2. 주요 기능: 자세한 기능 설명
+  3. 설치: 단계별 설치 가이드
+  4. 빠른 시작: 5분 시작 가이드 링크
+  5. 상세 가이드: 프로그램 구조 및 클래스 설명
+  6. LLM 설정: Groq / Perplexity / Gemini 개별 설정
+  7. 문제 해결: 일반적인 에러 및 해결방법
+  8. 버전 변경사항: v2.0 -> v2.1 변경점
+
+대상: 초급 ~ 고급 사용자 전부
+
+
+4) QUICKSTART_v2.1.md (5분 빠른 시작)
+------------------------------------------------
+용도: 초보자용 빠른 시작 가이드
+
+내용:
+  1. 5단계 빠른 시작
+  2. API 키 획득 방법 (각 LLM별)
+  3. 자주 묻는 질문 (FAQ)
+  4. 문제 해결
+  5. 학습 예제
+  6. LLM 선택 가이드
+
+대상: 초보자, 빠른 설정을 원하는 사용자
+
+
+5) MANIFEST_v2.1.txt (이 파일)
+------------------------------------------------
+용도: 파일 구조 및 설명서 요약
+
+내용:
+  - 파일 목록
+  - 각 파일 상세 설명
+  - 설정 정보
+  - 버전 변경사항
+  - 라이선스
+
+------------------------------------------------------------
+
+[설정 정보]
+------------------------------------------------------------
+
+설정 저장 위치:
+  Windows: C:\Users\{USERNAME}\.g-tutor\config.json
+  macOS:   ~/.g-tutor/config.json
+  Linux:   ~/.g-tutor/config.json
+
+설정 파일 형식 (JSON 예시):
+
+  {
+    "llm_provider": "groq",
+    "llm_model": "openai/gpt-oss-120b",
+    "groq_api_key": "gsk_...",
+    "gemini_api_key": "AIza_...",
+    "perplexity_api_key": "pplx_..."
+  }
+
+세션 저장 위치:
+  ~/.g-tutor/sessions/
+
+
+[버전 변경사항]
+------------------------------------------------------------
+
+v2.1 (2026년 3월 10일) - 안정화
+
+  FIXED:
+    - Textual Layout direction 파라미터 사용 제거
+    - Horizontal / Vertical 컨테이너 사용으로 호환성 개선
+    - TUI 레이아웃 구조 최적화
+
+  IMPROVED:
+    - 다중 LLM 클라이언트 완전 통합
+    - Setup 마법사 UI 개선
+    - 에러 메시지 상세화
+    - 한글 지원 강화
+
+  ADDED:
+    - Perplexity API 지원
+    - 시나리오 생성 테스트
+    - API 테스트 기능
+
+v2.0 (이전 버전)
+
+  - 초기 다중 LLM 통합
+  - 기본 TUI 구조
+  - Groq / Gemini 지원
+
+
+[빠른 시작 명령어]
+------------------------------------------------------------
+
+1. Setup 도구 실행 (첫 1회)
+   python test_setup_v2.1.py
+
+2. 메인 프로그램 실행
+   python gemini_tutor_app_v2.1.py
+
+3. 설정 초기화 (필요 시)
+   Windows:  Remove-Item $env:USERPROFILE\.g-tutor\config.json
+   macOS:    rm ~/.g-tutor/config.json
+   Linux:    rm ~/.g-tutor/config.json
+
+4. 라이브러리 재설치
+   pip install --upgrade groq google-generativeai rich textual httpx
+
+
+[라이선스]
+------------------------------------------------------------
+
+Gemini Tutor CLI v2.1
+Made for Terminal Learners
+
+이 프로젝트는 MIT 라이선스를 따릅니다.
+자유롭게 사용, 수정, 배포할 수 있습니다.
+
+
+[지원]
+------------------------------------------------------------
+
+- README_v2.1_KR.md : 전체 설명서
+- QUICKSTART_v2.1.md : 5분 시작 가이드
+- Groq 콘솔          : https://console.groq.com
+- Gemini AI Studio    : https://aistudio.google.com
+- Perplexity          : https://www.perplexity.ai
+
+버전: 2.1
+상태: 안정화
+업데이트: 2026년 3월 10일
+끝.

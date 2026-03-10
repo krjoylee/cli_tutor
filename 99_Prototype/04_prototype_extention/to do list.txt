@@ -1,0 +1,90 @@
+# Gemini Tutor CLI v2.x - 남은 작업 TODO
+
+## 1. TUI UX 완성
+
+- [ ] 세션/터미널/설명/에이전트 4영역 레이아웃 고정
+  - [ ] 최소 터미널 크기 정의 (너무 작을 때 경고)
+  - [ ] 패널 제목/테두리 한글로 통일
+- [ ] 하단 입력창(Input) 추가
+  - [ ] 사용자가 “하고 싶은 일” 자연어로 입력
+  - [ ] Enter 시 LLM 시나리오 생성 → 에이전트 패널에 표시
+- [ ] 기본 단축키 정의
+  - [ ] q: 종료
+  - [ ] c: 터미널 출력 지우기
+  - [ ] F1 혹은 ?: 도움말 팝업
+  - [ ] ↑/↓: 세션 선택 이동 (향후)
+
+## 2. 명령어 실행/설명 파이프라인
+
+- [ ] 실제 셸 명령 실행 기능 (옵션)
+  - [ ] Windows PowerShell / bash 공통 인터페이스 설계
+  - [ ] 실행 결과(표준출력/표준에러/exit code) 캡처
+- [ ] 실행 결과 설명 기능
+  - [ ] LLMClient.explain_command 구현 보완
+  - [ ] 방금 실행한 명령, 결과, 에러를 ExplanationPanel에 표시
+  - [ ] 실패 케이스에서 “다음에 시도할 명령 제안” 포함
+
+## 3. 시나리오 생성 품질 개선
+
+- [ ] LLM 프롬프트 템플릿 정리 (gemini-tutor-all.md 기반)
+  - [ ] beginner / intermediate / advanced 난이도 구분
+  - [ ] Windows / POSIX 명령어 분기 (EnvInfo 사용)
+- [ ] JSON 형식 시나리오 파서 추가
+  - [ ] LLM 응답을 JSON으로 강제
+  - [ ] Step 1,2,3을 리스트 UI로 예쁘게 렌더링
+- [ ] 실패시 폴백 처리
+  - [ ] JSON 파싱 실패 → 순수 텍스트 그대로 출력
+  - [ ] API 에러 메시지 한글화
+
+## 4. Multi-LLM 설정/전환
+
+- [ ] 설정 화면(TUI)에서 LLM 변경 기능
+  - [ ] Groq / Perplexity / Gemini 중 선택
+  - [ ] API 키 입력/수정 기능 (가림표시, 저장)
+- [ ] 런타임 전환 전략
+  - [ ] 현재 세션 유지한 채 LLM만 교체
+  - [ ] 세션별 LLM Provider 기록 (선택사항)
+- [ ] Perplexity / Gemini 구현 보완
+  - [ ] Perplexity 전용 모델/엔드포인트 정리
+  - [ ] google.generativeai → google.genai 마이그레이션 계획
+
+## 5. 설정/세션 관리 고도화
+
+- [ ] config.json 스키마 확정
+  - [ ] llm_provider, llm_model, api_keys
+  - [ ] explanation_level, beginner_help_on 등
+- [ ] 세션 로그 저장
+  - [ ] ~/.g-tutor/sessions/YYYYMMDD-HHMM.md 형태
+  - [ ] 사용자가 입력한 목표/명령/설명 기록
+- [ ] “세션 불러오기” 기능
+  - [ ] 최근 세션 목록 표시
+  - [ ] 선택 시 오른쪽 패널에 요약 표시
+
+## 6. 배포/운영 준비
+
+- [ ] 최소 요구사항 문서화
+  - [ ] Python 버전, OS 별 제약 (Windows 11, WSL 등)
+- [ ] 패키징
+  - [ ] pip 패키지 구조 초안 (setup.cfg / pyproject.toml)
+  - [ ] `gemini-tutor` 콘솔 스크립트 엔트리포인트
+- [ ] 예제 모음
+  - [ ] 파일 관리, Git, grep, find, Docker 등 튜토리얼 세트
+  - [ ] README/QUICKSTART에 링크
+
+## 7. 품질/테스트
+
+- [ ] 단위 테스트
+  - [ ] EnvInfo / ConfigManager / LLMClient
+- [ ] 통합 테스트 (mock LLM)
+  - [ ] 네트워크 없이도 돌아가는 시나리오 테스트
+- [ ] 로그 및 디버깅
+  - [ ] DEBUG 모드에서 LLM 요청/응답 로깅 옵션
+
+## 8. 문서/UX 다듬기
+
+- [ ] README_v2.1_KR 보완
+  - [ ] 실제 TUI 스크린샷 반영
+  - [ ] “처음 실행하면 어떤 화면이 나오는지” 단계별 캡처
+- [ ] QUICKSTART_v2.1 보완
+  - [ ] Multi-LLM별 요금/제약 간단 표
+- [ ] 영문 README 초안 작성 (향후 공개 대비)

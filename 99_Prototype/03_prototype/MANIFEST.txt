@@ -1,0 +1,358 @@
+# 📦 Gemini Tutor CLI - 패키지 완성 요약
+
+> Windows 11 PowerShell 5.1 에서 완벽하게 작동하는 파일 세트
+
+---
+
+## 📂 제공 파일 목록
+
+### 1. **gemini_tutor_app.py** (메인 프로그램)
+- **크기:** ~20KB
+- **기능:**
+  - ✅ Windows/macOS/Linux 환경 자동 감지
+  - ✅ Setup 마법사 (첫 실행 시)
+  - ✅ Gemini API 통합
+  - ✅ 3-컬럼 TUI 레이아웃 (좌/중/우)
+  - ✅ 세션 관리
+  - ✅ 명령어 시나리오 생성
+  - ✅ 명령어 설명 및 해석
+
+### 2. **test_setup.py** (테스트 & 초기 설정)
+- **크기:** ~8KB
+- **기능:**
+  - ✅ 환경 정보 출력
+  - ✅ 라이브러리 의존성 확인
+  - ✅ Gemini API 테스트
+  - ✅ 빠른 Setup 마법사
+  - ✅ 시나리오 생성 테스트
+
+### 3. **README_KR.md** (상세 설명서)
+- 시스템 요구사항
+- 설치 단계별 가이드
+- TUI 사용법
+- 문제 해결
+- 설정 파일 구조
+
+### 4. **QUICKSTART.md** (빠른 시작 5분)
+- 초보자 친화적 가이드
+- 최소 단계로 시작
+- FAQ 및 체크리스트
+- 다음 단계
+
+### 5. **MANIFEST.txt** (이 파일)
+- 패키지 완성 요약
+
+---
+
+## 🎯 사용 시나리오별 가이드
+
+### 시나리오 1️⃣: 처음 사용자
+```powershell
+# Step 1: 라이브러리 설치
+pip install google-generativeai rich textual
+
+# Step 2: 테스트 실행
+python test_setup.py
+
+# Step 3: 메인 프로그램 실행
+python gemini_tutor_app.py
+```
+
+**참고문서:** `QUICKSTART.md` (5분)
+
+---
+
+### 시나리오 2️⃣: 상세한 설명을 원하는 사용자
+```powershell
+# README_KR.md 를 먼저 읽고
+# 각 섹션별로 따라하기
+```
+
+**참고문서:** `README_KR.md` (30분)
+
+---
+
+### 시나리오 3️⃣: 개발자 (코드 커스터마이징)
+```
+파일 구조:
+1. EnvInfo 클래스: 환경 감지
+2. ConfigManager 클래스: 설정 관리
+3. SetupWizard 클래스: 초기 설정
+4. GeminiClient 클래스: API 호출
+5. TUI 클래스들: 화면 렌더링
+```
+
+**참고문서:** `gemini_tutor_app.py` 주석 참조
+
+---
+
+## 📋 요구사항 (최소)
+
+| 항목 | 요구사항 |
+|------|---------|
+| OS | Windows 11 (또는 macOS/Linux) |
+| PowerShell | 5.1 이상 |
+| Python | 3.8 이상 |
+| pip | 최신 버전 |
+| 인터넷 | 필수 (Gemini API 호출) |
+
+---
+
+## 🚀 설치 요약
+
+```
+# 1. 라이브러리 (1분)
+pip install google-generativeai rich textual
+
+# 2. API 키 발급 (2분, https://aistudio.google.com)
+# "Get API key" → "Create" → 복사
+
+# 3. 테스트 (1분)
+python test_setup.py
+
+# 4. 실행 (1분)
+python gemini_tutor_app.py
+```
+
+**총 소요 시간: 약 5분**
+
+---
+
+## 📊 기능 및 특징
+
+### ✅ 구현된 기능
+
+1. **환경 감지**
+   - OS 타입 (Windows, macOS, Linux, WSL)
+   - CPU 아키텍처 (x86_64, ARM64 등)
+   - Python 버전 확인
+
+2. **Setup 마법사**
+   - 첫 실행 시 자동 실행
+   - Gemini API 키 입력
+   - 설정 자동 저장
+
+3. **Gemini API 통합**
+   - 자연어 → 단계별 시나리오 생성
+   - 명령어 실행 결과 설명
+   - JSON 기반 구조화된 응답
+
+4. **TUI 레이아웃**
+   - 좌측: 세션 목록
+   - 중앙: 메인 터미널
+   - 우상: 명령어 설명 패널
+   - 우하: 에이전트/시나리오 패널
+
+5. **세션 관리**
+   - `~/.g-tutor/` 디렉터리 자동 생성
+   - 설정 파일 저장 (config.json)
+   - 세션 기록 저장 가능
+
+### 🔄 향후 추가 가능한 기능
+
+- [ ] 실제 셸 명령어 실행 및 후킹
+- [ ] 명령 실행 결과 자동 설명
+- [ ] 에러 자동 감지 및 해결책 제시
+- [ ] 세션 내역 마크다운 요약
+- [ ] Groq/다른 LLM 지원
+- [ ] 웹 UI 버전
+- [ ] GUI 버전
+
+---
+
+## 🔑 Gemini API 정보
+
+### 무료 티어 한계
+
+| 제한 | 값 |
+|------|-----|
+| 월별 요청 | 무제한* |
+| 일일 요청 | ~250 |
+| 분당 요청 | ~10 |
+| 사용 모델 | gemini-2.0-flash |
+
+*실제로는 quota 내에서 무제한 가능
+
+### API 특징
+
+- ✅ **무료:** 신용카드 불필요
+- ✅ **간단:** 몇 줄의 코드로 시작
+- ✅ **강력:** 한국어 지원
+- ✅ **신속:** 보통 3~10초 응답
+
+### 보안
+
+- API 키는 `~/.g-tutor/config.json` 에 로컬 저장
+- LLM에는 민감 정보 마스킹 후 전송
+- 키 유출 시 Google AI Studio에서 즉시 삭제 가능
+
+---
+
+## 🛠️ 구조 및 아키텍처
+
+```
+gemini_tutor_app.py
+├── EnvInfo
+│   ├── _detect_os()
+│   ├── _detect_arch()
+│   ├── _check_wsl()
+│
+├── ConfigManager
+│   ├── _load_config()
+│   ├── save_config()
+│   ├── get()
+│   └── set()
+│
+├── SetupWizard
+│   ├── run()
+│   ├── _show_env_info()
+│   ├── _setup_llm()
+│   ├── _setup_gemini()
+│   ├── _setup_groq()
+│   └── _show_summary()
+│
+├── GeminiClient
+│   ├── __init__()
+│   ├── generate_scenario()
+│   └── explain_command()
+│
+└── GeminiTutorApp (Textual)
+    ├── SessionPanel
+    ├── TerminalPanel
+    ├── ExplanationPanel
+    └── AgentPanel
+```
+
+---
+
+## 📝 파일별 설정 값
+
+### config.json 구조
+
+```json
+{
+  "llm_provider": "gemini",
+  "llm_model": "gemini-2.0-flash",
+  "gemini_api_key": "AIzaSyD_...",
+  "explanation_level": "beginner",
+  "safety_mode": "manual"
+}
+```
+
+### 저장 위치
+
+- **설정:** `~/.g-tutor/config.json`
+- **세션:** `~/.g-tutor/sessions/`
+- **로그:** `~/.g-tutor/logs/` (향후)
+
+---
+
+## 🐛 알려진 제한사항 (프로토타입)
+
+1. **실제 셸 입출력**
+   - 현재는 TUI 레이아웃 표시만
+   - 향후: bash/zsh 실제 통합 예정
+
+2. **명령 자동 실행**
+   - 현재는 제안만
+   - 향후: 사용자 승인 후 실행 예정
+
+3. **에러 자동 감지**
+   - 현재는 Gemini 일방향 설명만
+   - 향후: 양방향 에러 해석 예정
+
+4. **플랫폼 호환성**
+   - Windows 11 에서 완전 테스트됨
+   - macOS/Linux: 부분 지원 (파일 경로 등)
+
+---
+
+## 🎓 학습 경로
+
+### 레벨 1: 기본 사용 (5분)
+```
+1. 라이브러리 설치
+2. test_setup.py 실행
+3. API 키 입력
+4. gemini_tutor_app.py 실행
+```
+
+### 레벨 2: 활용 (20분)
+```
+1. 여러 명령어 시도
+2. 세션 기록 확인
+3. 다양한 목표 입력
+4. 결과 분석
+```
+
+### 레벨 3: 커스터마이징 (1시간+)
+```
+1. 코드 구조 분석
+2. 클래스 수정
+3. 기능 추가
+4. 디버깅
+```
+
+---
+
+## 💬 간단한 FAQ
+
+**Q: 정말 무료인가?**
+A: 네! Google Gemini API는 무료 티어가 충분합니다.
+
+**Q: 한글만 사용 가능한가?**
+A: 아니요. 영문/일문/중문 등 모든 언어 지원.
+
+**Q: 오프라인에서 사용 가능한가?**
+A: 아니요. Gemini API 호출이 필요하므로 인터넷 필수.
+
+**Q: 저장된 데이터는 어디에?**
+A: 모두 로컬 (`~/.g-tutor/`) 에 저장.
+
+**Q: 초보자도 사용 가능한가?**
+A: 네! QUICKSTART.md 를 따라하면 됩니다.
+
+---
+
+## 📞 기술 지원
+
+이 패키지는 **완전 한글화**되어 있습니다:
+
+- 📄 모든 문서: 한글
+- 💬 모든 프롬프트: 한글
+- 🎤 모든 출력: 한글
+
+개발자 연락처가 필요하면 원본 설계서 참조.
+
+---
+
+## 📦 패키지 내용물 체크리스트
+
+설치 전에 다음 파일이 있는지 확인하세요:
+
+- [ ] `gemini_tutor_app.py` (메인 프로그램)
+- [ ] `test_setup.py` (테스트 도구)
+- [ ] `README_KR.md` (상세 가이드)
+- [ ] `QUICKSTART.md` (빠른 시작)
+- [ ] `MANIFEST.txt` (이 파일)
+
+---
+
+## 🎉 축하합니다!
+
+이제 모든 준비가 되었습니다.
+
+**다음 단계:**
+1. `QUICKSTART.md` 읽기 (5분)
+2. 라이브러리 설치 (1분)
+3. `test_setup.py` 실행 (1분)
+4. `gemini_tutor_app.py` 실행 (1분)
+
+**Happy Learning!** 🚀
+
+---
+
+**버전:** 1.0 (프로토타입)  
+**생성일:** 2026년 3월 10일  
+**호환성:** Windows 11 PS 5.1+, macOS, Linux  
+**라이선스:** MIT (자유 이용)

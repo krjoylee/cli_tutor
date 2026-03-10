@@ -1,0 +1,425 @@
+# 📦 Gemini Tutor CLI v2.0 - 패키지 완성 가이드
+
+> Multi-LLM 통합 (Groq/Perplexity/Gemini)  
+> Windows 11 PowerShell 5.1 호환  
+> 2026년 3월 10일
+
+---
+
+## 📂 제공 파일 목록
+
+### 1. **gemini_tutor_app_v2.py** (메인 프로그램)
+- **크기:** ~25KB
+- **기능:**
+  - ✅ Multi-LLM 통합 (Groq/Perplexity/Gemini)
+  - ✅ 초기 Setup 마법사 (LLM 선택 가능)
+  - ✅ 자동 환경 감지 (Windows/macOS/Linux/WSL)
+  - ✅ 3-컬럼 TUI 레이아웃
+  - ✅ 세션 관리
+  - ✅ 명령어 시나리오 생성
+  - ✅ 명령어 설명 및 해석
+
+### 2. **test_setup_v2.py** (테스트 & Setup 도구)
+- **크기:** ~12KB
+- **기능:**
+  - ✅ 시스템 환경 정보 출력
+  - ✅ 라이브러리 의존성 확인
+  - ✅ Multi-LLM API 테스트 (Groq/Perplexity/Gemini)
+  - ✅ 빠른 Setup 마법사
+  - ✅ 시나리오 생성 테스트
+
+### 3. **README_v2_KR.md** (완전 설명서)
+- 시스템 요구사항
+- LLM별 설치 및 API 키 발급 방법
+- 단계별 설치 가이드
+- TUI 사용법
+- 문제 해결
+- LLM 비교 및 선택 가이드
+- 학습 경로
+
+### 4. **QUICKSTART_v2.md** (5분 빠른 시작)
+- 초보자 친화적 가이드
+- 최소 단계로 시작
+- FAQ
+
+### 5. **MANIFEST_v2.txt** (이 파일)
+- 패키지 완성 가이드
+
+---
+
+## 🎯 LLM별 설치 시나리오
+
+### ⭐ 시나리오 1: Groq (기본, 추천)
+
+**특징:**
+- 매우 빠름 (응답 시간 1-3초)
+- 무료 (일 1,000 요청)
+- 한국 서버에서도 빠름
+- RPM 제한: 30
+
+**설치 순서:**
+```powershell
+# 1단계: 라이브러리 설치
+pip install groq rich textual httpx
+
+# 2단계: Setup 실행
+python test_setup_v2.py
+# → 1번 선택
+# → Groq API 키 입력 (https://console.groq.com)
+
+# 3단계: 실행
+python gemini_tutor_app_v2.py
+```
+
+**API 키 발급:** https://console.groq.com
+
+---
+
+### 🔵 시나리오 2: Google Gemini
+
+**특징:**
+- 한국어 우수
+- 빠름 (응답 시간 2-5초)
+- 무료 (일 250 요청)
+- Windows 한글 입력 우수
+
+**설치 순서:**
+```powershell
+# 1단계: 라이브러리 설치
+pip install google-generativeai rich textual httpx
+
+# 2단계: Setup 실행
+python test_setup_v2.py
+# → 3번 선택
+# → Gemini API 키 입력 (https://aistudio.google.com)
+
+# 3단계: 실행
+python gemini_tutor_app_v2.py
+```
+
+**API 키 발급:** https://aistudio.google.com
+
+---
+
+### 🟣 시나리오 3: Perplexity
+
+**특징:**
+- 웹 검색 통합
+- 최신 정보 제공
+- 빠름 (응답 시간 2-5초)
+- 요금제에 따라 상이
+
+**설치 순서:**
+```powershell
+# 1단계: 라이브러리 설치
+pip install httpx rich textual
+
+# 2단계: Setup 실행
+python test_setup_v2.py
+# → 2번 선택
+# → Perplexity API 키 입력 (https://www.perplexity.ai)
+
+# 3단계: 실행
+python gemini_tutor_app_v2.py
+```
+
+**API 키 발급:** https://www.perplexity.ai
+
+---
+
+## 🚀 최초 사용자 5단계 설치
+
+### Step 1: Python 확인 (1분)
+```powershell
+python --version
+pip --version
+```
+
+### Step 2: 라이브러리 설치 (2분)
+```powershell
+# Groq (추천)
+pip install groq google-generativeai rich textual httpx
+
+# 또는 Google Gemini
+pip install google-generativeai rich textual httpx
+
+# 또는 Perplexity
+pip install httpx rich textual
+```
+
+### Step 3: Setup 마법사 (1분)
+```powershell
+python test_setup_v2.py
+
+# 화면에 다음이 표시됨:
+# 1) 시스템 정보 확인
+# 2) 의존성 확인
+# 3) LLM 선택 (1=Groq, 2=Perplexity, 3=Gemini)
+# 4) API 키 입력
+# 5) API 테스트
+```
+
+### Step 4: 메인 프로그램 실행 (1분)
+```powershell
+python gemini_tutor_app_v2.py
+
+# TUI가 나타나고, 명령어 입력 대기 중
+```
+
+### Step 5: 명령어 배우기 시작! 🎉
+```
+입력 예시: "현재 폴더의 파일 목록 보기"
+
+AI가 제시:
+1. ls 명령어 설명
+2. ls -la 명령어 설명
+3. tree 명령어 설명 (선택)
+```
+
+**총 소요 시간: 약 5분**
+
+---
+
+## 🔑 API 키 발급 방법
+
+### Groq API 키
+
+1. https://console.groq.com 에 접속
+2. "Sign Up" (또는 "Sign In") 클릭
+3. 이메일/GitHub로 가입/로그인
+4. 좌측 "API Keys" 메뉴 클릭
+5. "+ Create New API Key" 버튼 클릭
+6. 팝업에서 키 이름 입력 (기본값 OK)
+7. "Create API Key" 클릭
+8. 생성된 키를 복사 (한 번만 표시됨)
+9. `gsk_...` 형태의 키를 저장
+
+**제한:**
+- 일 1,000 요청
+- 분당 30 요청
+- 무료
+
+### Google Gemini API 키
+
+1. https://aistudio.google.com 에 접속
+2. Google 계정으로 로그인
+3. "Get API Key" 버튼 (좌측 상단)
+4. "Create API key in new project" 선택
+5. "Create API key" 클릭
+6. 생성된 키 복사
+7. `AIzaSyD_...` 형태의 키를 저장
+
+**제한:**
+- 일 250 요청
+- 무료
+- 신용카드 불필요
+
+### Perplexity API 키
+
+1. https://www.perplexity.ai 에 접속
+2. 계정 생성/로그인
+3. 우측 상단 프로필 → "Settings" 클릭
+4. "API" 탭 선택
+5. "Create New API Key" 버튼
+6. 키 이름 입력 후 생성
+7. `ppl_...` 형태의 키 복사 및 저장
+
+**제한:**
+- 요금제에 따라 상이
+- 무료 시험 (첫 5달러)
+
+---
+
+## 📋 시스템 요구사항
+
+| 항목 | 최소 | 권장 |
+|------|------|------|
+| **OS** | Windows 11 | Windows 11 Pro |
+| **PowerShell** | 5.1 | 7.0+ |
+| **Python** | 3.8 | 3.10+ |
+| **pip** | 최신 | 23.0+ |
+| **RAM** | 4GB | 8GB+ |
+| **디스크** | 100MB | 500MB+ |
+| **인터넷** | 필수 | 1Mbps+ |
+
+---
+
+## 📁 설정 파일 위치
+
+모든 설정과 세션은 **`~/.g-tutor/`** 에 저장됩니다:
+
+```
+~/.g-tutor/
+├── config.json              # LLM 선택 및 API 키
+├── sessions/                # 세션 기록
+│   ├── default/
+│   ├── project-a/
+│   └── ...
+└── logs/                    # 로그 (향후)
+```
+
+---
+
+## 🧪 테스트 순서
+
+```powershell
+# 1단계: 환경 정보 확인
+python test_setup_v2.py
+# → "시스템 환경 정보" 섹션 확인
+
+# 2단계: 의존성 확인
+# → 모든 라이브러리 설치 확인
+
+# 3단계: 설정 확인
+# → config.json 파일 확인
+
+# 4단계: API 테스트 (선택)
+# → Groq/Gemini/Perplexity 중 선택
+
+# 5단계: 메인 프로그램 실행
+python gemini_tutor_app_v2.py
+```
+
+---
+
+## ⚡ 빠른 명령어 레퍼런스
+
+### 설치 한 줄 명령
+
+```powershell
+# Groq 전체 설치
+pip install groq google-generativeai rich textual httpx && python test_setup_v2.py
+
+# 또는 각 LLM별
+# Gemini
+pip install google-generativeai rich textual && python test_setup_v2.py
+
+# Perplexity
+pip install httpx rich textual && python test_setup_v2.py
+```
+
+### 설정 초기화
+
+```powershell
+# Windows
+Remove-Item -Recurse -Force $env:USERPROFILE\.g-tutor
+
+# macOS/Linux
+rm -rf ~/.g-tutor
+```
+
+### 다시 Setup
+
+```powershell
+python test_setup_v2.py
+```
+
+---
+
+## 🐛 공통 문제 해결
+
+### 1. "No module named 'groq'"
+```powershell
+pip install groq google-generativeai rich textual httpx
+```
+
+### 2. "API 키 오류"
+- 설정 파일 삭제: `~/.g-tutor/config.json`
+- Setup 다시 실행
+- API 키 다시 입력
+
+### 3. "인터넷 연결 실패"
+```powershell
+ping google.com
+# 또는 각 API 서버 ping
+```
+
+### 4. "권한 오류"
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+---
+
+## 📊 LLM 선택 가이드
+
+| 상황 | 추천 LLM | 이유 |
+|------|---------|------|
+| **첫 사용** | Groq | 빠르고 무료, 설정 간단 |
+| **한국어 우선** | Gemini | 한국어 응답 우수 |
+| **최신 정보** | Perplexity | 웹 검색 통합 |
+| **빠른 응답** | Groq | 평균 1-3초 |
+| **안정성** | Gemini | Google 서비스 |
+| **비용 최소** | Groq | 일 1,000 요청 무료 |
+
+---
+
+## 🎓 다음 단계
+
+### 설치 후
+1. ✅ Setup 마법사 완료
+2. ✅ API 테스트 성공
+3. 📖 README_v2_KR.md 읽기
+4. 🚀 메인 프로그램 실행
+5. 💡 명령어 배우기 시작
+
+### 심화 학습
+- 여러 LLM 비교
+- 세션 관리
+- 코드 커스터마이징
+- 새로운 기능 개발
+
+---
+
+## 📞 지원 및 피드백
+
+### 자주 확인할 것
+- 설정 파일: `~/.g-tutor/config.json`
+- 에러 메시지 읽기
+- 인터넷 연결 확인
+
+### 완전 초기화
+```powershell
+# 1. 설정 삭제
+Remove-Item -Recurse -Force $env:USERPROFILE\.g-tutor
+
+# 2. 라이브러리 재설치
+pip install --upgrade groq google-generativeai rich textual httpx
+
+# 3. Setup 다시 실행
+python test_setup_v2.py
+```
+
+---
+
+## 📦 패키지 체크리스트
+
+설치 전에 다음 파일이 있는지 확인하세요:
+
+- [x] `gemini_tutor_app_v2.py` (메인 프로그램)
+- [x] `test_setup_v2.py` (테스트 & Setup 도구)
+- [x] `README_v2_KR.md` (완전 설명서)
+- [x] `QUICKSTART_v2.md` (5분 빠른 시작)
+- [x] `MANIFEST_v2.txt` (이 파일)
+
+---
+
+## 🎉 준비 완료!
+
+이제 모든 준비가 되었습니다.
+
+```powershell
+# 시작하세요!
+pip install groq google-generativeai rich textual httpx
+python test_setup_v2.py
+python gemini_tutor_app_v2.py
+```
+
+**Happy Learning! 🚀**
+
+---
+
+**버전:** 2.0 (Multi-LLM 통합)  
+**생성일:** 2026년 3월 10일  
+**호환성:** Windows 11 PS 5.1+, macOS, Linux, WSL  
+**라이선스:** MIT (자유 이용)
