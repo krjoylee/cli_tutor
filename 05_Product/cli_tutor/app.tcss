@@ -9,7 +9,7 @@ Screen {
 #main-layout {
     layout: grid;
     grid-size: 3 1;
-    grid-columns: 2fr 5fr 3fr; /* 세션:터미널:우측패널 비율 조정 */
+    grid-columns: 2fr 4fr 4fr; /* 세션:터미널:우측패널 (우측 패널 가독성 확보를 위해 확대) */
 }
 
 #sessions {
