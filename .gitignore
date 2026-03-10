@@ -1,0 +1,11 @@
+05_Product/logs/
+*.log
+__pycache__/
+.venv/
+.env
+.DS_Store
+*.pyc
+*.pyo
+*.pyd
+.db
+.sqlite
