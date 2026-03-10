@@ -1,8 +1,7 @@
 # CLI Tutor v1.0 — 제품 사양서 (Product Specification)
 
-- **작성일**: 2026-03-10
-- **작성자**: Anti & System Agent
-- **상태**: In-Progress
+- **마지막 업데이트**: 2026-03-10 20:55
+- **상태**: Stable (v1.2 Ready)
 
 ---
 
@@ -147,8 +146,8 @@ classDiagram
 Screen {
     layout: grid;
     grid-size: 3 2;
-    grid-columns: 15 1fr 1fr;
-    grid-rows: 1fr auto;
+    grid-columns: 1fr 4fr 5fr; /* 세션(최소화) : 터미널 : 우측패널(가시성 확보) */
+    grid-rows: 1fr 3;          /* 입력창 높이 3으로 고정 */
 }
 
 #sessions     { row-span: 1; }
@@ -284,16 +283,20 @@ class LLMClient:
 
 ## 8. 향후 로드맵 및 우선순위 (Roadmap & Priorities)
 
-### [P0] 필수 안정화 및 가시성 (v1.2) - ✅ 진행 완료
-- **영구 로그 시스템**: `logs/` 폴더 기반 지속적 디버깅 체계 구축.
-- **셸 전환 기능**: `/shell [powershell|cmd]` 명령어로 실습 환경 유연화.
-- **안전 종료 유도**: `Ctrl+C` 방지 매뉴얼 및 `Ctrl+Q` 종료 대체.
-- **레이아웃 반응성**: 패널별 `min-width` 적용으로 창 크기 변화 대응.
+### [P0] 필수 안정화 및 가시성 (v1.2) - ✅ 260310 20:55 완료
+- **영구 로그 시스템**: `logs/` 폴더 기반 지속적 디버깅 및 노이즈 필터링 구축.
+- **셸 전환 및 CD 보완**: `/shell` 명령어 및 `cd..` 등 특수 이동 로직 완비.
+- **레이아웃 최적화**: 1:4:5 가변 그리드를 통한 우측 패널 가독성 극대화.
 
-### [P1] 학습 경험 고도화 (v2.0)
-- **대화형(PTY) 지원**: `vim`, `pnpm init` 등 상호작용이 필요한 명령어 실행 지원.
-- **실시간 스트리밍**: LLM 해설 및 시나리오 생성 시 한 글자씩 출력되는 스트리밍 UI 도입.
-- **Gemini CLI 통합**: 최신 Gemini 모델용 CLI 도구 연동 및 환경 설정 가이드.
+### [P1] UI/UX 고도화 (v1.3 예정 - 내일 작업)
+- **스크롤 내비게이션**: 우측 패널 휠 스크롤 감도 개선 및 자동 추적(Auto-scroll) 강화.
+- **포커스 인디케이터**: 위젯 전환 시 현재 위치를 명확히 보여주는 테두리 효과 보강.
+- **실시간 스트리밍**: LLM 답변이 실시간으로 써지는 타이핑 효과 도입.
+- **대화형(PTY) 지원**: `git commit`, `vim` 등 인터랙티브 모드 실행 연구.
+
+### [P2] 플랫폼 확장 (v2.0)
+- **커스텀 시나리오 샵**: 사용자 공유 시나리오 다운로드 및 관리.
+- **멀티모달 튜터링**: 스크린샷 분석 기반 시각적 가이드.
 
 ### [P2] 플랫폼 확장 (v3.0)
 - **커스텀 시나리오 샵**: 사용자가 직접 만든 JSON 시나리오를 공유하고 다운로드하는 광장.
@@ -338,6 +341,16 @@ class LLMClient:
 | **Widgets: Markdown Viewer** | [textual.textualize.io/widgets/...](https://textual.textualize.io/widgets/markdown_viewer) | LLM 응답을 비동기적으로 렌더링하기 위한 스트리밍 설계 기초 |
 | **Widgets: RichLog / Rich Printing** | [textual.textualize.io/widgets/...](https://textual.textualize.io/widgets/rich_log) | 터미널 패널 내 `AnsiDecoder`와 `Rich.Text`를 이용한 출력 최적화 |
 
+---
+
+## 11. 오늘의 작업 요약 (2026-03-10)
+
+1.  **디버깅 혁신**: 일일 로그 파일 시스템을 구축하고, 라이브러리 노이즈를 제거하여 "추적 가능한" 상태를 만들었습니다.
+2.  **안전성 강화**: `cd..` 처리 오류와 `os` 임포트 누락 등 실행 중 발생하는 치명적 버그들을 전수 수리했습니다.
+3.  **UI 최적화**: 1:4:5 가변 레이아웃을 도입하여 해설과 가이드가 잘리는 문제를 해결하고 우측 패널 가시성을 확보했습니다. (버전 v1.2 확보)
+
+> [!TIP]
+> **내일의 시작**: `terminal_panel.py`와 `app.tcss`에서 우측 패널의 스크롤 편의성과 포커스 전환 시각 효과 보강을 우선적으로 진행할 예정입니다.
 ### 10.3 기술적 결정 사유
 - **비동기 워커 (`@work`)**: Textual 공식 가이드의 "Running long-running tasks" 설계 원칙에 따라, LLM API 호출(네트워크 I/O) 중에도 UI가 멈추지 않도록 비동기 전용 쓰레드를 할당했습니다.
 - **모듈화 구조**: 전문가 가이드인 "Workflow"의 최신 권장 사항에 맞춰, 모든 패널을 별도 클래스로 캡슐화하여 확장성을 확보했습니다.

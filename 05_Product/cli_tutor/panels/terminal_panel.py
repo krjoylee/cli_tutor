@@ -34,6 +34,7 @@ class TerminalPanel(Static):
         self.history = []
         self._decoder = AnsiDecoder()
         self.target_shell = "cmd" if os.name == 'nt' else "sh"
+        self.current_cwd = os.getcwd() # 현재 작업 디렉토리 명시적 추적
 
     def render(self):
         """Rich Panel 형태로 히스토리 렌더링."""
@@ -85,13 +86,9 @@ class TerminalPanel(Static):
         self.scroll_end(animate=False)
 
     async def execute_command(self, command: str) -> Tuple[int, str, str]:
-        """OS 셸에서 명령어 실행 및 입출력 캡처 (비동기).
-        
-        Returns:
-            Tuple[int, str, str]: (exit_code, stdout, stderr)
-        """
-        cwd = os.getcwd()
-        self.add_command_echo(command, cwd)
+        """OS 셸에서 명령어 실행 및 입출력 캡처 (비동기)."""
+        self.add_command_echo(command, self.current_cwd)
+        cwd = self.current_cwd
         
         # 윈도우 환경과 POSIX 환경에서의 실행 처리 분기
         is_windows = os.name == 'nt'
@@ -150,8 +147,9 @@ class TerminalPanel(Static):
                 
             exit_code = process.returncode
             
-            # CD 명령 처리
-            if command.strip().startswith("cd ") and exit_code == 0:
+            # CD 명령 처리 (cd.. 및 다양한 공백 케이스 대응)
+            cmd_root = command.strip().lower()
+            if (cmd_root == "cd" or cmd_root.startswith("cd ") or cmd_root.startswith("cd..")) and exit_code == 0:
                 self._handle_cd(command)
 
             return exit_code, stdout_str, stderr_str
@@ -179,14 +177,38 @@ class TerminalPanel(Static):
                     pass
 
     def _handle_cd(self, command: str):
-        """디렉토리 이동 처리 내부 로직."""
-        target_dir = command.strip()[3:].strip()
+        """디렉토리 이동 처리 내부 로직 (상태 유지)."""
+        cmd_part = command.strip()
+        
+        # 'cd..' 처리
+        if cmd_part.lower().startswith("cd.."):
+            target = ".." + cmd_part[4:]
+        elif cmd_part.lower() == "cd":
+            # 인자 없는 cd는 홈 디렉토리(혹은 윈도우에서는 현재 경로 출력)
+            # 여기서는 윈도우 일반 사용자 경험을 위해 사용자 홈으로 이동하거나 무시
+            target = os.path.expanduser("~")
+        else:
+            # 'cd path' 처리
+            target = cmd_part[3:].strip()
+            
         try:
-            target_dir = shlex.split(target_dir)[0]
-            os.chdir(target_dir)
-            self.add_output(f"현재 디렉토리: {os.getcwd()}", is_error=False)
+            if target:
+                # shlex.split은 따옴표 있는 경로 처리를 위해 사용
+                parts = shlex.split(target)
+                final_target = parts[0] if parts else target
+                
+                # 절대 경로로 변환하여 이동 (오류 방지)
+                new_path = os.path.abspath(os.path.join(self.current_cwd, final_target))
+                
+                if os.path.exists(new_path) and os.path.isdir(new_path):
+                    os.chdir(new_path)
+                    self.current_cwd = os.getcwd()
+                    self.add_output(f"📂 디렉토리 변경: {self.current_cwd}")
+                else:
+                    self.add_output(f"❌ 경로를 찾을 수 없습니다: {final_target}", is_error=True)
         except Exception as e:
-            self.add_output(f"cd 처리 에러: {e}", is_error=True)
+            self.add_output(f"⚠️ CD 오류: {e}", is_error=True)
+            CLILogger.error(f"CD handler failed: {e}")
 
     def clear_history(self):
         """화면 지우기."""
